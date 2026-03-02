@@ -8,6 +8,8 @@ if (!fs.existsSync(PAGES_DIR)) {
   fs.mkdirSync(PAGES_DIR, { recursive: true });
 }
 
+let pagesCleaned = false;
+
 /**
  * Загрузка страницы с сохранением HTML в pages/page-XXXXX.html,
  * где XXXXX — миллисекунды с момента старта скрипта (с лидирующими нулями).
@@ -18,6 +20,25 @@ if (!fs.existsSync(PAGES_DIR)) {
  * @returns {Promise<{ html: string; filePath: string }>}
  */
 async function loadPage(page, url, options = {}) {
+  if (!pagesCleaned) {
+    try {
+      const entries = fs.readdirSync(PAGES_DIR);
+      for (const name of entries) {
+        const fullPath = path.join(PAGES_DIR, name);
+        try {
+          if (fs.statSync(fullPath).isFile()) {
+            fs.unlinkSync(fullPath);
+          }
+        } catch {
+          // игнорируем ошибки удаления отдельных файлов
+        }
+      }
+    } catch {
+      // игнорируем ошибки чтения директории
+    }
+    pagesCleaned = true;
+  }
+
   const waitUntil = options.waitUntil ?? "domcontentloaded";
   const timeout = options.timeout ?? 30000;
 

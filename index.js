@@ -7,6 +7,7 @@ const { getArticle } = require("./getProductArticle");
 
 const DEBUG_HTML_PATH = path.join(__dirname, "debug-page.html");
 const AUTH_STATE_PATH = path.join(__dirname, ".playwright-ozon-state.json");
+const EXPORT_JSON_PATH = path.join(__dirname, "export.json");
 
 /** База (мс) + случайная добавка 10–1000 мс. */
 function delayMs(baseMs) {
@@ -228,6 +229,14 @@ function delayMs(baseMs) {
     console.log("");
 
     console.table(allProducts);
+
+    fs.writeFileSync(
+      EXPORT_JSON_PATH,
+      JSON.stringify(allProducts, null, 2),
+      "utf8",
+    );
+    console.log("Данные сохранены в", EXPORT_JSON_PATH);
+
     await context.storageState({ path: AUTH_STATE_PATH });
     console.log(
       "Сохранено состояние сессии для следующего запуска:",

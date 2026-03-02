@@ -3,3 +3,4 @@ node_modules
 debug-page.html
 .playwright-ozon-state.json
 pages/
+export.json
