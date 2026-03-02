@@ -2,6 +2,7 @@ require("dotenv").config();
 const fs = require("fs");
 const path = require("path");
 const { chromium } = require("playwright");
+const { loadPage } = require("./getPage");
 const { getArticle } = require("./getProductArticle");
 
 const DEBUG_HTML_PATH = path.join(__dirname, "debug-page.html");
@@ -85,15 +86,15 @@ function delayMs(baseMs) {
   console.log(`Запуск...`);
 
   try {
-    // domcontentloaded быстрее и не таймаутит на тяжёлых страницах; капча не успевает редиректить
-    await page.goto(sellerUrl, {
+    // Загрузка страницы продавца через общий helper с сохранением HTML в pages/page-XXXXX.html
+    const { html } = await loadPage(page, sellerUrl, {
       waitUntil: "domcontentloaded",
       timeout: 30000,
+      label: "seller",
     });
     await page.waitForTimeout(3000); // даём подгрузиться контенту
 
-    // Сразу сохраняем HTML — даже если дальше упадёт, файл будет
-    const html = await page.content();
+    // Дублируем снимок в debug-page.html для быстрой отладки
     fs.writeFileSync(DEBUG_HTML_PATH, html, "utf8");
     console.log("HTML сохранён:", DEBUG_HTML_PATH);
 
